@@ -1,0 +1,80 @@
+= minitest-parallel_fork
+
+minitest-parallel_fork adds fork-based parallelization to Minitest.  Each test/spec
+suite is run one of the forks, allowing this to work correctly when using
+before_all/after_all/around_all hooks provided by minitest-hooks.  Using separate
+processes via fork can significantly improve spec performance when using MRI,
+and can work in cases where Minitest's default thread-based parallelism do not work,
+such as when tests/specs modify the constant namespace.
+
+= Installation
+
+  gem install minitest-parallel_fork
+
+= Source Code
+
+Source code is available on GitHub at https://github.com/jeremyevans/minitest-parallel_fork
+
+= Usage 
+
+You can enable fork-based parallelism just by requiring +minitest/parallel_fork+. One easy
+to do so without modifying the spec code itself is to use the +RUBYOPT+ environment variable.
+So if you execute your specs using:
+
+  rake spec
+
+You can switch to fork-based parallelism using:
+
+  RUBYOPT=-rminitest/parallel_fork rake spec
+
+To control the number of forks, you can set the +NCPU+ environment variable:
+
+  NCPU=8 RUBYOPT=-rminitest/parallel_fork rake spec
+
+If you don't set the +NCPU+ environment variable, minitest-parallel_fork will use
+4 forks by default.
+
+= Hooks
+
+In some cases, especially when using external databases, you'll need to do some
+before fork or after fork setup.  minitest/parallel_fork supports +before_parallel_fork+
+and +after_parallel_fork+ hooks.
+
++before_parallel_fork+ is called before any child processes are forked:
+
+  Minitest.before_parallel_fork do
+    DB.disconnect
+  end
+
++after_parallel_fork+ is called after each child process is forked, with the number
+of the child process, starting at 0:
+
+  Minitest.after_parallel_fork do |i|
+    DB.opts[:database] += (i+1).to_s
+  end
+
+The above examples show a fairly easy way to use minitest-parallel_fork with an external
+database when using Sequel.  Before forking, all existing database connections are
+disconnecting, and after forking, the database name is changed in each child to reference
+a child-specific database, so that the child processes do not share a database and are
+thus independent.
+
+= Speedup
+
+The speedup you get greatly depends on your specs.  Here's some examples using Sequel's
+specs:
+
+                     2 forks         4 forks
+  spec_core:      1.25x - 1.36x        1.5x   
+  spec_model:     1.29x - 1.62x   1.72x - 2.02x
+  spec_plugin:    1.57x - 1.76x   2.29x - 2.37x    
+  spec_sqlite:    1.75x - 1.86x   2.26x - 2.65x
+  spec_postgres:  1.32x - 1.40x     Untested
+
+= License
+
+MIT
+
+= Author
+
+Jeremy Evans <code@jeremyevans.net>
