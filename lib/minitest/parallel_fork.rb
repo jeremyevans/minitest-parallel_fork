@@ -36,6 +36,10 @@ module Minitest
     end
   end
 
+  module Unparallelize
+    define_method(:run_one_method, &Minitest::Test.method(:run_one_method))
+  end
+
   # Override __run to use a child forks to run the speeds, which
   # allows for parallel spec execution on MRI.
   def self.__run(reporter, options)
@@ -58,8 +62,13 @@ module Minitest
 
         p_suites = []
         suites.each_with_index{|s, j| p_suites << s if j % n == i}
-        p_suites.partition{|s| s.test_order != :parallel}.
-          map{|ss| ss.map{|s| s.run(reporter, options) }}
+        p_suites.each do |s|
+          if s.is_a?(Minitest::Parallel::Test::ClassMethods)
+           s.extend(Unparallelize)
+          end
+
+          s.run(reporter, options)
+        end
 
         data = %w'count assertions results'.map{|meth| stat_reporter.send(meth)}
         data[-1] = data[-1].map do |res|
