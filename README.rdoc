@@ -59,6 +59,20 @@ disconnecting, and after forking, the database name is changed in each child to 
 a child-specific database, so that the child processes do not share a database and are
 thus independent.
 
+== ActiveRecord
+
+To use this with Rails/ActiveRecord, you probably want to use hooks similar to:
+
+  Minitest.before_parallel_fork do
+    ActiveRecord::Base.connection.disconnect!
+  end
+
+  Minitest.after_parallel_fork do |i|
+    db_config = Rails.application.config.database_configuration[Rails.env].clone
+    db_config['database'] += (i+1).to_s
+    ActiveRecord::Base.establish_connection(db_config)
+  end
+
 = Speedup
 
 The speedup you get greatly depends on your specs.  Here's some examples using Sequel's
