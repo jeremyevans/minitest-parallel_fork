@@ -17,6 +17,7 @@ describe 'minitest/parallel_fork' do
       time.must_be :<, 4
       time.must_be :>, 1
       output.must_match /:parent/
+      output.must_match /16 runs, 8 assertions, 4 failures, 4 errors, 4 skips/
       4.times do |i|
         output.must_match /:child#{i}a/
       end

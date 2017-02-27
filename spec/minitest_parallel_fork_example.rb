@@ -25,5 +25,17 @@ end
     it "should work" do
       sleep(1).must_equal 1
     end
+
+    it "should fail" do
+      1.must_equal 2
+    end
+
+    it "should raise" do
+      raise
+    end
+
+    it "should skip" do
+      skip
+    end
   end
 end

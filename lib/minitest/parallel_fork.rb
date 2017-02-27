@@ -91,7 +91,7 @@ module Minitest
         stat_reporter.assertions += assertions
         results.map! do |name, failures|
           runnable = Test.new(name)
-          runnable.failures.concat(failures)
+          runnable.failures.concat(failures.map{|f| f.is_a?(DumpableUnexpectedError) ? UnexpectedError.new(f) : f})
           runnable
         end
         stat_reporter.results.concat(results)
