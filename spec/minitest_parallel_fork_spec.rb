@@ -4,7 +4,8 @@ require 'minitest/autorun'
 describe 'minitest/parallel_fork' do
   [[nil, ''],
    ['MPF_PARALLELIZE_ME', ' when parallelize_me! is used'],
-   ['MPF_TEST_ORDER_PARALLEL', ' when test_order parallel is used']
+   ['MPF_TEST_ORDER_PARALLEL', ' when test_order parallel is used'],
+   ['MPF_TEST_MINITEST_REPORTERS', ' when minitest-reporters is in use']
   ].each do |env_key, msg|
     it "should execute in parallel#{msg}" do
       t = Time.now
