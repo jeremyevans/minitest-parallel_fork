@@ -45,6 +45,10 @@ module Minitest
   def self.__run(reporter, options)
     suites = Runnable.runnables.shuffle
     stat_reporter = reporter.reporters.detect{|rep| rep.is_a?(StatisticsReporter)}
+    if !stat_reporter && defined?(Minitest::Reporters)
+      delegate_reporter = reporter.reporters.detect{|rep| rep.is_a?(Minitest::Reporters::DelegateReporter)}
+      stat_reporter = delegate_reporter.send(:all_reporters).detect{|rep| rep.is_a?(StatisticsReporter)}
+    end
 
     n = (ENV['NCPU'] || 4).to_i
     reads = []

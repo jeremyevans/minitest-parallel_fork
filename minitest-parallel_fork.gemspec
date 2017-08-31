@@ -21,4 +21,5 @@ such as when specs modify the constant namespace.
 END
 
   s.add_development_dependency "minitest", '>5'
+  s.add_development_dependency "minitest-reporters", '>1'
 end
