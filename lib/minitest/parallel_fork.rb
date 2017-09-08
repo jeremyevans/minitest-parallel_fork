@@ -39,12 +39,16 @@ module Minitest
   module Unparallelize
     define_method(:run_one_method, &Minitest::Test.method(:run_one_method))
   end
+  
+  def self.parallel_fork_stat_reporter(reporter)
+    reporter.reporters.detect{|rep| rep.is_a?(StatisticsReporter)}
+  end
 
   # Override __run to use a child forks to run the speeds, which
   # allows for parallel spec execution on MRI.
   def self.__run(reporter, options)
     suites = Runnable.runnables.shuffle
-    stat_reporter = reporter.reporters.detect{|rep| rep.is_a?(StatisticsReporter)}
+    stat_reporter = parallel_fork_stat_reporter(reporter)
 
     n = (ENV['NCPU'] || 4).to_i
     reads = []

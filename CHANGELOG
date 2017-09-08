@@ -1,3 +1,7 @@
+=== master
+
+* Allow overriding the stat reporter used via Minitest.parallel_fork_stat_reporter method (jeremyevans) (#3)
+
 === 1.0.2 (2017-02-27)
 
 * Show correct number of errors in output (jeremyevans)
