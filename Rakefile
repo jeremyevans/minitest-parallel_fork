@@ -13,7 +13,6 @@ end
 desc "Run specs"
 task :spec do
   ENV['RUBY'] = FileUtils::RUBY
-  ENV['RUBYOPT'] = "#{ENV['RUBYOPT']} -rubygems"
   sh %{#{FileUtils::RUBY} spec/minitest_parallel_fork_spec.rb}
 end
 
