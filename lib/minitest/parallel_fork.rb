@@ -12,30 +12,6 @@ module Minitest
     @after_parallel_fork = block
   end
 
-  # Subclass of Assertion for unexpected errors.  UnexpectedError
-  # can not be used as it can include undumpable objects.  This
-  # class converts all data it needs to plain strings, so that
-  # it will be dumpable.
-  class DumpableUnexpectedError < Assertion # :nodoc:
-    attr_accessor :backtrace
-
-    def initialize(unexpected)
-      exception_class_name = unexpected.exception.class.name.to_s
-      exception_message = unexpected.exception.message.to_s
-      super("#{exception_class_name}: #{exception_message}")
-      self.backtrace = unexpected.exception.backtrace.map(&:to_s)
-    end
-
-    def message
-      bt = Minitest.filter_backtrace(backtrace).join "\n    "
-      "#{super}\n    #{bt}"
-    end
-
-    def result_label
-      "Error"
-    end
-  end
-
   module Unparallelize
     define_method(:run_one_method, &Minitest::Test.method(:run_one_method))
   end
@@ -75,10 +51,6 @@ module Minitest
         end
 
         data = %w'count assertions results'.map{|meth| stat_reporter.send(meth)}
-        data[-1] = data[-1].map do |res|
-          [res.name, res.failures.map{|f| f.is_a?(UnexpectedError) ? DumpableUnexpectedError.new(f) : f}]
-        end
-
         write.write(Marshal.dump(data))
         write.close
       end
@@ -93,11 +65,6 @@ module Minitest
         count, assertions, results = Marshal.load(data)
         stat_reporter.count += count
         stat_reporter.assertions += assertions
-        results.map! do |name, failures|
-          runnable = Test.new(name)
-          runnable.failures.concat(failures.map{|f| f.is_a?(DumpableUnexpectedError) ? UnexpectedError.new(f) : f})
-          runnable
-        end
         stat_reporter.results.concat(results)
       end
     end.join
