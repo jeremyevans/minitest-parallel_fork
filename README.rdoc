@@ -1,7 +1,7 @@
 = minitest-parallel_fork
 
 minitest-parallel_fork adds fork-based parallelization to Minitest.  Each test/spec
-suite is run one of the forks, allowing this to work correctly when using
+suite is run in one of the forks, allowing this to work correctly when using
 before_all/after_all/around_all hooks provided by minitest-hooks.  Using separate
 processes via fork can significantly improve spec performance when using MRI,
 and can work in cases where Minitest's default thread-based parallelism do not work,
@@ -55,7 +55,7 @@ of the child process, starting at 0:
 
 The above examples show a fairly easy way to use minitest-parallel_fork with an external
 database when using Sequel.  Before forking, all existing database connections are
-disconnecting, and after forking, the database name is changed in each child to reference
+disconnected, and after forking, the database name is changed in each child to reference
 a child-specific database, so that the child processes do not share a database and are
 thus independent.
 
