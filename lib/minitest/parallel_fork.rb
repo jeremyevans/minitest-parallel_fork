@@ -2,6 +2,8 @@ gem 'minitest'
 require 'minitest'
 
 module Minitest
+  BYTES_PER_PIPE_READ = 4096
+
   # Set the before_parallel_fork block to the given block
   def self.before_parallel_fork(&block)
     @before_parallel_fork = block
@@ -56,18 +58,34 @@ module Minitest
       end
       write.close
     end
-    Process.waitall
 
-    Thread.new do
-      reads.each do |r|
-        data = r.read
-        r.close
-        count, assertions, results = Marshal.load(data)
-        stat_reporter.count += count
-        stat_reporter.assertions += assertions
-        stat_reporter.results.concat(results)
+    threads =
+      reads.map do |read|
+        Thread.new do
+          result = "".dup
+
+          loop do
+            begin
+              result << read.read_nonblock(BYTES_PER_PIPE_READ)
+            rescue IO::WaitReadable
+              # Wait for the pipe to have data before we try to read again.
+              IO.select([read])
+            rescue EOFError
+              read.close
+              break
+            end
+          end
+
+          result
+        end
       end
-    end.join
+
+    threads.map(&:value).each do |data|
+      count, assertions, results = Marshal.load(data)
+      stat_reporter.count += count
+      stat_reporter.assertions += assertions
+      stat_reporter.results.concat(results)
+    end
 
     nil
   end
