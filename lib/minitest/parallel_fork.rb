@@ -62,7 +62,7 @@ module Minitest
     threads =
       reads.map do |read|
         Thread.new do
-          result = "".dup
+          result = String.new
 
           loop do
             begin
