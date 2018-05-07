@@ -51,6 +51,12 @@ module Minitest
         end
 
         data = %w'count assertions results'.map{|meth| stat_reporter.send(meth)}
+        if data[-1].any?{|result| !result.is_a?(Minitest::Result)}
+          data[-1] = data[-1].map do |result|
+            Minitest::Result.from(result)
+          end
+        end
+
         write.write(Marshal.dump(data))
         write.close
       end
