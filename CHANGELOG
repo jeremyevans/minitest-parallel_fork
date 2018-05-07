@@ -1,3 +1,9 @@
+=== 1.1.1 (2018-05-07)
+
+* Work around marshalling issue when there are failures in *_all hooks when using minitest-hooks (jeremyevans)
+
+* Don't deadlock when a child process sends a large amount of marshalled data (chanks) (#4, #5)
+
 === 1.1.0 (2018-04-19)
 
 * Remove DumpableUnexpectedError, require minitest 5.11.0+ (jeremyevans)
