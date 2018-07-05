@@ -57,6 +57,20 @@ module Minitest
           end
         end
 
+        data[-1].each do |result|
+          result.failures.each do |failure|
+            if failure.is_a?(Minitest::UnexpectedError)
+              e = failure.exception
+              begin
+                Marshal.dump(e)
+              rescue TypeError
+                failure.exception = RuntimeError.new("Wrapped undumpable exception for: #{e.class}: #{e.message}")
+                failure.exception.set_backtrace(e.backtrace)
+              end
+            end
+          end
+        end
+
         write.write(Marshal.dump(data))
         write.close
       end

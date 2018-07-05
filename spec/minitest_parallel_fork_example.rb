@@ -12,6 +12,10 @@ Minitest.after_parallel_fork do |i|
   print ":child#{i}#{a}"
 end
 
+class MyExceptionClass < StandardError
+  attr_reader :something
+end
+
 4.times do |i|
   describe 'minitest/parallel_fork' do
     parallelize_me! if ENV['MPF_PARALLELIZE_ME']
@@ -32,6 +36,12 @@ end
 
     it "should raise" do
       raise
+    end
+
+    it "should raise exception containing undumpable data" do
+      e = MyExceptionClass.new("error")
+      e.something = Class.new
+      raise e
     end
 
     it "should skip" do

@@ -1,3 +1,7 @@
+=== 1.1.2 (2018-07-05)
+
+* Handle raised exceptions containing unmarshallable data (jeremyevans)
+
 === 1.1.1 (2018-05-07)
 
 * Work around marshalling issue when there are failures in *_all hooks when using minitest-hooks (jeremyevans)
