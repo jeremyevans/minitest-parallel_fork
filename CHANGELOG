@@ -1,3 +1,7 @@
+=== master
+
+* Add on_parallel_fork_marshal_failure hook for handling marshal failures (child process exiting) (jeremyevans)
+
 === 1.1.2 (2018-07-05)
 
 * Handle raised exceptions containing unmarshallable data (jeremyevans)

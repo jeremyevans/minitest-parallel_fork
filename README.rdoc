@@ -59,6 +59,15 @@ disconnected, and after forking, the database name is changed in each child to r
 a child-specific database, so that the child processes do not share a database and are
 thus independent.
 
+There is also a hook for debugging.  +on_parallel_fork_marshal_failure+ is called if
+there is an error unmarshalling data sent from the child process to the parent process.
+This can happen if one of the child processes exits unexpected during the test, before
+it reports results.
+
+  Minitest.on_parallel_fork_marshal_failure do
+    # Gather relevant logs for more debugging
+  end
+
 == ActiveRecord
 
 To use this with Rails/ActiveRecord, you probably want to use hooks similar to:

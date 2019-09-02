@@ -24,4 +24,17 @@ describe 'minitest/parallel_fork' do
       end
     end
   end
+
+  it "should call on_parallel_fork_marshal_failure on failure" do
+    t = Time.now
+    ENV['NCPU'] = '4'
+    ENV['MPF_TEST_CHILD_FAILURE'] = '1'
+    output = `#{ENV['RUBY']} -I lib spec/minitest_parallel_fork_example.rb 2>&1`
+    ENV.delete('MPF_TEST_CHILD_FAILURE')
+
+    time = (Time.now - t)
+    time.must_be :<, 4
+    output.must_match /:child-failurea/
+    output.must_match /marshal data too short/
+  end
 end

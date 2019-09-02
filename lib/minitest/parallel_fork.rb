@@ -6,11 +6,19 @@ module Minitest
   def self.before_parallel_fork(&block)
     @before_parallel_fork = block
   end
+  @before_parallel_fork = nil
 
   # Set the after_parallel_fork block to the given block
   def self.after_parallel_fork(i=nil, &block)
     @after_parallel_fork = block
   end
+  @after_parallel_fork = nil
+
+  # Set the on_parallel_fork_marshal_failure block to the given block
+  def self.on_parallel_fork_marshal_failure(&block)
+    @on_parallel_fork_marshal_failure = block
+  end
+  @on_parallel_fork_marshal_failure = nil
 
   module Unparallelize
     define_method(:run_one_method, &Minitest::Test.method(:run_one_method))
@@ -28,7 +36,7 @@ module Minitest
 
     n = (ENV['NCPU'] || 4).to_i
     reads = []
-    if defined?(@before_parallel_fork)
+    if @before_parallel_fork
       @before_parallel_fork.call
     end
     n.times do |i|
@@ -36,7 +44,7 @@ module Minitest
       reads << read
       fork do
         read.close
-        if defined?(@after_parallel_fork)
+        if @after_parallel_fork
           @after_parallel_fork.call(i)
         end
 
@@ -78,7 +86,14 @@ module Minitest
     end
 
     reads.map{|read| Thread.new(read, &:read)}.map(&:value).each do |data|
-      count, assertions, results = Marshal.load(data)
+      begin
+        count, assertions, results = Marshal.load(data)
+      rescue ArgumentError
+        if @on_parallel_fork_marshal_failure
+          @on_parallel_fork_marshal_failure.call
+        end
+        raise
+      end
       stat_reporter.count += count
       stat_reporter.assertions += assertions
       stat_reporter.results.concat(results)
