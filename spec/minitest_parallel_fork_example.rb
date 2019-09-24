@@ -1,5 +1,5 @@
 gem 'minitest'
-require 'minitest/autorun'
+require 'minitest/global_expectations/autorun'
 require 'minitest/parallel_fork'
 
 a = nil

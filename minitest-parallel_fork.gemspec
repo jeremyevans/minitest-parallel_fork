@@ -20,4 +20,5 @@ such as when specs modify the constant namespace.
 END
 
   s.add_development_dependency "minitest", '>=5.11.0'
+  s.add_development_dependency "minitest-global_expectations"
 end

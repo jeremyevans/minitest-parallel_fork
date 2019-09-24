@@ -1,6 +1,6 @@
 ENV['MT_NO_PLUGINS'] = '1'
 gem 'minitest'
-require 'minitest/autorun'
+require 'minitest/global_expectations/autorun'
 
 describe 'minitest/parallel_fork' do
   [[nil, ''],
