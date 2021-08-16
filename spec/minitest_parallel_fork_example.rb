@@ -33,7 +33,8 @@ end
     end
 
     it "should work" do
-      sleep(1).must_equal 1
+      sleep(1)
+      1.must_equal 1
     end
 
     it "should fail" do
