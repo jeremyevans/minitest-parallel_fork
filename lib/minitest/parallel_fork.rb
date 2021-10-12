@@ -25,7 +25,9 @@ module Minitest
   end
   
   def self.parallel_fork_stat_reporter(reporter)
-    reporter.reporters.detect{|rep| rep.is_a?(StatisticsReporter)}
+    reporter.reporters.detect do |rep|
+      %w'count assertions results count= assertions='.all?{|meth| rep.respond_to?(meth)}
+    end
   end
 
   # Override __run to use a child forks to run the speeds, which

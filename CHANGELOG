@@ -1,3 +1,7 @@
+=== master
+
+* Detect reporter to use by looking for specific methods, instead of specifically for a Minitest::StatisticsReporter (jeremyevans) (#8)
+
 === 1.2.0 (2021-08-16)
 
 * Work correctly with Minitest 5.14+ (jeremyevans)
