@@ -17,10 +17,11 @@ describe 'minitest/parallel_fork' do
       time = (Time.now - t)
       time.must_be :<, 4
       time.must_be :>, 1
-      output.must_match /:parent/
-      output.must_match /20 runs, 8 assertions, 4 failures, 8 errors, 4 skips/
+      output.must_include ':parent'
+      output.must_include '20 runs, 8 assertions, 4 failures, 8 errors, 4 skips'
+
       4.times do |i|
-        output.must_match /:child#{i}a/
+        output.must_match(/:child#{i}a/)
       end
     end
   end
@@ -34,7 +35,7 @@ describe 'minitest/parallel_fork' do
 
     time = (Time.now - t)
     time.must_be :<, 4
-    output.must_match /:child-failurea/
-    output.must_match /marshal data too short/
+    output.must_include ':child-failurea'
+    output.must_include 'marshal data too short'
   end
 end

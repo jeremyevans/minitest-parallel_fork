@@ -13,7 +13,7 @@ end
 desc "Run specs"
 task :spec do
   ENV['RUBY'] = FileUtils::RUBY
-  sh %{#{FileUtils::RUBY} spec/minitest_parallel_fork_spec.rb}
+  sh %{#{FileUtils::RUBY} #{"-w" if RUBY_VERSION >= '3'} spec/minitest_parallel_fork_spec.rb}
 end
 
 task :default=>:spec
