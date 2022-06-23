@@ -9,7 +9,7 @@ spec = Gem::Specification.new do |s|
   s.author = "Jeremy Evans"
   s.email = "code@jeremyevans.net"
   s.homepage = "http://github.com/jeremyevans/minitest-parallel_fork"
-  s.files = %w(MIT-LICENSE CHANGELOG README.rdoc Rakefile) + Dir["{spec,lib}/**/*.rb"]
+  s.files = %w(MIT-LICENSE CHANGELOG README.rdoc) + Dir["lib/**/*.rb"]
   s.description = <<END
 minitest-parallel_fork adds fork-based parallelization to Minitest.  Each test/spec
 suite is run in one of the forks, allowing this to work correctly when using
