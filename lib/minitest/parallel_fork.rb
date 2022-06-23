@@ -44,7 +44,7 @@ module Minitest
     n.times do |i|
       read, write = IO.pipe.each{|io| io.binmode}
       reads << read
-      fork do
+      Process.fork do
         read.close
         if @after_parallel_fork
           @after_parallel_fork.call(i)
@@ -61,19 +61,28 @@ module Minitest
         end
 
         data = %w'count assertions results'.map{|meth| stat_reporter.send(meth)}
+
+        # :nocov:
+        # Support old minitest versions that don't use Minitest::Result automatically
         if data[-1].any?{|result| !result.is_a?(Minitest::Result)}
           data[-1] = data[-1].map do |result|
             Minitest::Result.from(result)
           end
         end
+        # :nocov:
 
         data[-1].each do |result|
           result.failures.each do |failure|
             if failure.is_a?(Minitest::UnexpectedError)
+              # :nocov:
+              # Support old minitest versions using different method name
               e = failure.respond_to?(:error) ? failure.error : failure.exception
+              # :nocov:
               begin
                 Marshal.dump(e)
               rescue TypeError
+                # :nocov:
+                # Support old minitest not automatically using dumpable exceptions
                 e2 = RuntimeError.new("Wrapped undumpable exception for: #{e.class}: #{e.message}")
                 e2.set_backtrace(e.backtrace)
                 if failure.respond_to?(:error=)
@@ -81,6 +90,7 @@ module Minitest
                 else
                   failure.exception = e2
                 end
+                # :nocov:
               end
             end
           end

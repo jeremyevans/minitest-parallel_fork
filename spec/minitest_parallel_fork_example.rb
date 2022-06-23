@@ -3,23 +3,27 @@ require 'minitest/global_expectations/autorun'
 require 'minitest/parallel_fork'
 
 a = nil
-Minitest.before_parallel_fork do
+if ENV['MPF_NO_HOOKS']
   a = 'a'
-  print ":parent"
-end
+else
+  Minitest.before_parallel_fork do
+    a = 'a'
+    print ":parent"
+  end
 
-Minitest.after_parallel_fork do |i|
-  print ":child#{i}#{a}"
-end
+  Minitest.after_parallel_fork do |i|
+    print ":child#{i}#{a}"
+  end
 
-if ENV['MPF_TEST_CHILD_FAILURE']
-  Minitest.on_parallel_fork_marshal_failure do |i|
-    print ":child-failure#{i}#{a}"
+  if ENV['MPF_TEST_CHILD_FAILURE']
+    Minitest.on_parallel_fork_marshal_failure do |i|
+      print ":child-failure#{i}#{a}"
+    end
   end
 end
 
 class MyExceptionClass < StandardError
-  attr_reader :something
+  attr_accessor :something
 end
 
 4.times do |i|

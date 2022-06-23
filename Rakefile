@@ -17,6 +17,13 @@ end
 
 task :default=>:spec
 
+desc "Run specs with coverage"
+task :spec_cov do
+  ENV['COVERAGE'] = '1'
+  ENV['RUBY'] = FileUtils::RUBY
+  sh %{#{FileUtils::RUBY} spec/minitest_parallel_fork_spec.rb}
+end
+
 ### RDoc
 
 require "rdoc/task"

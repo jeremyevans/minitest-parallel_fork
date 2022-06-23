@@ -1,2 +1,3 @@
+/coverage
 /rdoc
-minitest-parallel_fork-*.gem
+/minitest-parallel_fork-*.gem
