@@ -19,7 +19,7 @@ and can work in cases where Minitest's default thread-based parallelism do not w
 such as when specs modify the constant namespace.
 END
 
-  s.add_development_dependency "minitest", '>=5.15.0'
+  s.add_dependency "minitest", '>=5.15.0'
   s.add_development_dependency "minitest-hooks"
   s.add_development_dependency "minitest-global_expectations"
 end
