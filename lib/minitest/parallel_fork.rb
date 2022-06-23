@@ -54,7 +54,7 @@ module Minitest
         suites.each_with_index{|s, j| p_suites << s if j % n == i}
         p_suites.each do |s|
           if s.is_a?(Minitest::Parallel::Test::ClassMethods)
-           s.extend(Unparallelize)
+            s.extend(Unparallelize)
           end
 
           s.run(reporter, options)
@@ -74,10 +74,7 @@ module Minitest
         data[-1].each do |result|
           result.failures.each do |failure|
             if failure.is_a?(Minitest::UnexpectedError)
-              # :nocov:
-              # Support old minitest versions using different method name
-              e = failure.respond_to?(:error) ? failure.error : failure.exception
-              # :nocov:
+              e = failure.error
               begin
                 Marshal.dump(e)
               rescue TypeError
@@ -85,11 +82,7 @@ module Minitest
                 # Support old minitest not automatically using dumpable exceptions
                 e2 = RuntimeError.new("Wrapped undumpable exception for: #{e.class}: #{e.message}")
                 e2.set_backtrace(e.backtrace)
-                if failure.respond_to?(:error=)
-                  failure.error = e2
-                else
-                  failure.exception = e2
-                end
+                failure.error = e2
                 # :nocov:
               end
             end
