@@ -61,34 +61,6 @@ module Minitest
         end
 
         data = %w'count assertions results'.map{|meth| stat_reporter.send(meth)}
-
-        # :nocov:
-        # Support old minitest versions that don't use Minitest::Result automatically
-        if data[-1].any?{|result| !result.is_a?(Minitest::Result)}
-          data[-1] = data[-1].map do |result|
-            Minitest::Result.from(result)
-          end
-        end
-        # :nocov:
-
-        data[-1].each do |result|
-          result.failures.each do |failure|
-            if failure.is_a?(Minitest::UnexpectedError)
-              e = failure.error
-              begin
-                Marshal.dump(e)
-              rescue TypeError
-                # :nocov:
-                # Support old minitest not automatically using dumpable exceptions
-                e2 = RuntimeError.new("Wrapped undumpable exception for: #{e.class}: #{e.message}")
-                e2.set_backtrace(e.backtrace)
-                failure.error = e2
-                # :nocov:
-              end
-            end
-          end
-        end
-
         write.write(Marshal.dump(data))
         write.close
       end
