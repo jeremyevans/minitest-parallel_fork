@@ -50,4 +50,10 @@ describe 'minitest/parallel_fork' do
     output.must_include ':child-failurea'
     output.must_include 'marshal data too short'
   end
+
+  it "should handle failures in *_all methods when using minitest-hooks" do
+    output, time = run_mpf('MPF_MINITEST_HOOKS')
+    time.must_be :<, 4
+    output.must_include '23 runs, 8 assertions, 4 failures, 10 errors, 4 skips'
+  end
 end

@@ -1,6 +1,8 @@
 gem 'minitest'
 require 'minitest/global_expectations/autorun'
 require 'minitest/parallel_fork'
+require 'minitest/hooks/default' if ENV['MPF_MINITEST_HOOKS']
+
 
 a = nil
 if ENV['MPF_NO_HOOKS']
@@ -59,5 +61,25 @@ end
     it "should skip" do
       skip
     end
+  end
+end
+
+if ENV['MPF_MINITEST_HOOKS']
+  describe "failure in before(:all)" do
+    before(:all) do
+      e = MyExceptionClass.new("error")
+      e.something = Class.new
+      raise e
+    end
+    it "should fail" do end
+  end
+
+  describe "failure in after(:all)" do
+    after(:all) do
+      e = MyExceptionClass.new("error")
+      e.something = Class.new
+      raise e
+    end
+    it "should fail" do end
   end
 end
