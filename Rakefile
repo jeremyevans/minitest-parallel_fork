@@ -33,7 +33,7 @@ RDoc::Task.new do |rdoc|
   rdoc.options += ["--quiet", "--line-numbers", "--inline-source", '--title', 'minitest-parallel_fork: fork-based parallelization for minitest', '--main', 'README.rdoc']
 
   begin
-    gem 'hanna-nouveau'
+    gem 'hanna'
     rdoc.options += ['-f', 'hanna']
   rescue Gem::LoadError
   end
