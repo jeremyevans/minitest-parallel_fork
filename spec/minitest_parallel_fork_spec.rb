@@ -11,6 +11,7 @@ ENV['NCPU'] = '4'
 describe 'minitest/parallel_fork' do
   def run_mpf(*env_keys)
     env_keys.each{|k| ENV[k] = '1'}
+    ENV.delete('MT_NO_PLUGINS') if ENV['MPF_SEVERAL_STATISTICS_REPORTERS']
     t = Time.now
     output = `#{ENV['RUBY']} -I lib spec/minitest_parallel_fork_example.rb 2>&1`
     [output, Time.now - t]
@@ -55,5 +56,12 @@ describe 'minitest/parallel_fork' do
     output, time = run_mpf('MPF_MINITEST_HOOKS')
     time.must_be :<, 4
     output.must_include '23 runs, 8 assertions, 4 failures, 10 errors, 4 skips'
+  end
+
+  it "should support several statistics reporters" do
+    output, time = run_mpf('MPF_SEVERAL_STATISTICS_REPORTERS')
+    time.must_be :<, 4
+    output.must_include '20 runs, 8 assertions, 4 failures, 8 errors, 4 skip'
+    output.must_include 'Stats: 20R, 8A, 4F, 8E, 4S'
   end
 end

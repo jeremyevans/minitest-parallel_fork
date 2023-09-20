@@ -3,7 +3,6 @@ require 'minitest/global_expectations/autorun'
 require 'minitest/parallel_fork'
 require 'minitest/hooks/default' if ENV['MPF_MINITEST_HOOKS']
 
-
 a = nil
 if ENV['MPF_NO_HOOKS']
   a = 'a'

@@ -76,9 +76,12 @@ module Minitest
         end
         raise
       end
-      stat_reporter.count += count
-      stat_reporter.assertions += assertions
-      stat_reporter.results.concat(results)
+      reporter.reporters.each do |rep|
+        next unless %w'count assertions results count= assertions='.all?{|meth| rep.respond_to?(meth)}
+        rep.count += count
+        rep.assertions += assertions
+        rep.results.concat(results)
+      end
     end
 
     nil
