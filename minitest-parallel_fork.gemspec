@@ -26,6 +26,7 @@ END
     "source_code_uri"   => 'https://github.com/jeremyevans/minitest-parallel_fork'
   }
 
+  required_ruby_version '>=2.2'
   s.add_dependency "minitest", '>=5.15.0'
   s.add_development_dependency "minitest-hooks"
   s.add_development_dependency "minitest-global_expectations"
