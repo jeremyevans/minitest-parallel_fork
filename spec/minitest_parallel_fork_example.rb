@@ -3,6 +3,20 @@ require 'minitest/global_expectations/autorun'
 require 'minitest/parallel_fork'
 require 'minitest/hooks/default' if ENV['MPF_MINITEST_HOOKS']
 
+if ENV['MPF_SEVERAL_STATISTICS_REPORTERS']
+  Minitest.singleton_class.send(:prepend, Module.new do
+    define_method(:init_plugins) do |options|
+      reporter << Class.new(Minitest::StatisticsReporter) do
+        def report
+          super
+          io.puts "Stats: #{count}R, #{assertions}A, #{failures}F, #{errors}E, #{skips}S"
+        end
+      end.new(options[:io], options)
+      super(options)
+    end
+  end)
+end
+
 a = nil
 if ENV['MPF_NO_HOOKS']
   a = 'a'
