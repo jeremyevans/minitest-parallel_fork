@@ -12,7 +12,9 @@ describe 'minitest/parallel_fork' do
   def run_mpf(*env_keys)
     env_keys.each{|k| ENV[k] = '1'}
     t = Time.now
-    output = `#{ENV['RUBY']} -I lib spec/minitest_parallel_fork_example.rb 2>&1`
+    prefix = env_keys.include?('MPF_FAIL_FAST') ? 'interrupt_' : ''
+    example = "spec/minitest_parallel_fork_#{prefix}example.rb"
+    output = `#{ENV['RUBY']} -I lib #{example} 2>&1`
     [output, Time.now - t]
   ensure
     env_keys.each{|k| ENV.delete(k)}
@@ -62,5 +64,23 @@ describe 'minitest/parallel_fork' do
     time.must_be :<, 4
     output.must_include '20 runs, 8 assertions, 4 failures, 8 errors, 4 skip'
     output.must_include 'Stats: 20R, 8A, 4F, 8E, 4S'
+  end
+
+  it "should stop all serial executions when and Interrupt is raised" do
+    output, time = run_mpf('MPF_FAIL_FAST')
+    time.must_be :<, 1
+    output.must_include 'fast_fail_plugin loaded'
+    output.must_include '1 runs, 1 assertions, 1 failures, 0 errors, 0 skips'
+    output.wont_include 'before must_equal'
+    output.wont_include 'after must_equal'
+  end
+
+  it "should stop all parallel executions when and Interrupt is raised" do
+    output, time = run_mpf('MPF_FAIL_FAST', 'MPF_PARALLELIZE_ME')
+    time.must_be :<, 1
+    output.must_include 'fast_fail_plugin loaded'
+    output.must_include '1 runs, 1 assertions, 1 failures, 0 errors, 0 skips'
+    output.wont_include 'before must_equal'
+    output.wont_include 'after must_equal'
   end
 end
