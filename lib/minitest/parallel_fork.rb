@@ -1,39 +1,42 @@
 require 'minitest'
 
+module Minitest::Unparallelize
+  define_method(:run_one_method, &Minitest::Test.method(:run_one_method))
+end
+
 module Minitest
+  @before_parallel_fork = nil
+  @after_parallel_fork = nil
+  @on_parallel_fork_marshal_failure = nil
+end
+
+class << Minitest
   # Set the before_parallel_fork block to the given block
-  def self.before_parallel_fork(&block)
+  def before_parallel_fork(&block)
     @before_parallel_fork = block
   end
-  @before_parallel_fork = nil
 
   # Set the after_parallel_fork block to the given block
-  def self.after_parallel_fork(i=nil, &block)
+  def after_parallel_fork(i=nil, &block)
     @after_parallel_fork = block
   end
-  @after_parallel_fork = nil
 
   # Set the on_parallel_fork_marshal_failure block to the given block
-  def self.on_parallel_fork_marshal_failure(&block)
+  def on_parallel_fork_marshal_failure(&block)
     @on_parallel_fork_marshal_failure = block
   end
-  @on_parallel_fork_marshal_failure = nil
 
-  module Unparallelize
-    define_method(:run_one_method, &Minitest::Test.method(:run_one_method))
-  end
-  
-  def self.parallel_fork_stat_reporter(reporter)
+  def parallel_fork_stat_reporter(reporter)
     reporter.reporters.detect do |rep|
       %w'count assertions results count= assertions='.all?{|meth| rep.respond_to?(meth)}
     end
   end
 
-  def self.parallel_fork_suites
-    Runnable.runnables.shuffle
+  def parallel_fork_suites
+    Minitest::Runnable.runnables.shuffle
   end
 
-  def self.parallel_fork_setup_children(suites, reporter, options)
+  def parallel_fork_setup_children(suites, reporter, options)
     stat_reporter = parallel_fork_stat_reporter(reporter)
 
     if @before_parallel_fork
@@ -53,7 +56,7 @@ module Minitest
         suites.each_with_index{|s, j| p_suites << s if j % n == i}
         p_suites.each do |s|
           if s.is_a?(Minitest::Parallel::Test::ClassMethods)
-            s.extend(Unparallelize)
+            s.extend(Minitest::Unparallelize)
           end
 
           s.run(reporter, options)
@@ -68,7 +71,7 @@ module Minitest
     end
   end
 
-  def self.parallel_fork_wait_for_children(data, reporter)
+  def parallel_fork_wait_for_children(data, reporter)
     data.map{|_pid, read| Thread.new(read, &:read)}.map(&:value).each do |data|
       begin
         count, assertions, results = Marshal.load(data)
@@ -87,13 +90,13 @@ module Minitest
     end
   end
 
-  def self.parallel_fork_number
+  def parallel_fork_number
     (ENV['NCPU'] || 4).to_i
   end
 
   # Override __run to use a child forks to run the speeds, which
   # allows for parallel spec execution on MRI.
-  def self.__run(reporter, options)
+  def __run(reporter, options)
     parallel_fork_wait_for_children(parallel_fork_setup_children(parallel_fork_suites, reporter, options), reporter)
     nil
   end
