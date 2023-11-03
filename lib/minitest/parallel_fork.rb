@@ -30,21 +30,21 @@ module Minitest
     end
   end
 
-  # Override __run to use a child forks to run the speeds, which
-  # allows for parallel spec execution on MRI.
-  def self.__run(reporter, options)
-    suites = Runnable.runnables.shuffle
+  def self.parallel_fork_suites
+    Runnable.runnables.shuffle
+  end
+
+  def self.parallel_fork_setup_children(suites, reporter, options)
     stat_reporter = parallel_fork_stat_reporter(reporter)
 
-    n = (ENV['NCPU'] || 4).to_i
-    reads = []
     if @before_parallel_fork
       @before_parallel_fork.call
     end
-    n.times do |i|
+
+    n = parallel_fork_number
+    n.times.map do |i|
       read, write = IO.pipe.each{|io| io.binmode}
-      reads << read
-      Process.fork do
+      pid = Process.fork do
         read.close
         if @after_parallel_fork
           @after_parallel_fork.call(i)
@@ -65,9 +65,12 @@ module Minitest
         write.close
       end
       write.close
+      [pid, read]
     end
+  end
 
-    reads.map{|read| Thread.new(read, &:read)}.map(&:value).each do |data|
+  def self.parallel_fork_wait_for_children(data, reporter)
+    data.map{|_pid, read| Thread.new(read, &:read)}.map(&:value).each do |data|
       begin
         count, assertions, results = Marshal.load(data)
       rescue ArgumentError
@@ -83,7 +86,16 @@ module Minitest
         rep.results.concat(results)
       end
     end
+  end
 
+  def self.parallel_fork_number
+    (ENV['NCPU'] || 4).to_i
+  end
+
+  # Override __run to use a child forks to run the speeds, which
+  # allows for parallel spec execution on MRI.
+  def self.__run(reporter, options)
+    parallel_fork_wait_for_children(parallel_fork_setup_children(parallel_fork_suites, reporter, options), reporter)
     nil
   end
 end
