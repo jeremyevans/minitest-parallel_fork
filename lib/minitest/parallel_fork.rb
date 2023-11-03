@@ -1,4 +1,3 @@
-gem 'minitest'
 require 'minitest'
 
 module Minitest

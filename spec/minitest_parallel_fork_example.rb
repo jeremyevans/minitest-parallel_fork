@@ -1,4 +1,3 @@
-gem 'minitest'
 require 'minitest/global_expectations/autorun'
 require 'minitest/parallel_fork'
 require 'minitest/hooks/default' if ENV['MPF_MINITEST_HOOKS']

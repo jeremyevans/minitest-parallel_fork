@@ -3,7 +3,6 @@ if ENV.delete('COVERAGE')
 end
 
 ENV['MT_NO_PLUGINS'] = '1'
-gem 'minitest'
 require 'minitest/global_expectations/autorun'
 
 ENV['NCPU'] = '4'
