@@ -26,8 +26,10 @@ class << Minitest
     @on_parallel_fork_marshal_failure = block
   end
 
-  def parallel_fork_stat_reporter(reporter)
-    reporter.reporters.detect do |rep|
+  attr_reader :parallel_fork_stat_reporter
+
+  def set_parallel_fork_stat_reporter(reporter)
+    @parallel_fork_stat_reporter = reporter.reporters.detect do |rep|
       %w'count assertions results count= assertions='.all?{|meth| rep.respond_to?(meth)}
     end
   end
@@ -36,34 +38,61 @@ class << Minitest
     Minitest::Runnable.runnables.shuffle
   end
 
-  def parallel_fork_setup_children(suites, reporter, options)
-    stat_reporter = parallel_fork_stat_reporter(reporter)
-
+  def run_before_parallel_fork_hook
     if @before_parallel_fork
       @before_parallel_fork.call
     end
+  end
+
+  def run_after_parallel_fork_hook(i)
+    if @after_parallel_fork
+      @after_parallel_fork.call(i)
+    end
+  end
+
+  def parallel_fork_data_to_marshal
+    %i'count assertions results'.map{|meth| parallel_fork_stat_reporter.send(meth)}
+  end
+
+  def parallel_fork_data_from_marshal(data)
+    Marshal.load(data)
+  rescue ArgumentError
+    if @on_parallel_fork_marshal_failure
+      @on_parallel_fork_marshal_failure.call
+    end
+    raise
+  end
+
+  def parallel_fork_run_test_suites(suites, reporter, options)
+    suites.each do |suite|
+      parallel_fork_run_test_suite(suite, reporter, options)
+    end
+  end
+
+  def parallel_fork_run_test_suite(suite, reporter, options)
+    if suite.is_a?(Minitest::Parallel::Test::ClassMethods)
+      suite.extend(Minitest::Unparallelize)
+    end
+
+    suite.run(reporter, options)
+  end
+
+  def parallel_fork_setup_children(suites, reporter, options)
+    set_parallel_fork_stat_reporter(reporter)
+    run_before_parallel_fork_hook
 
     n = parallel_fork_number
     n.times.map do |i|
       read, write = IO.pipe.each{|io| io.binmode}
       pid = Process.fork do
         read.close
-        if @after_parallel_fork
-          @after_parallel_fork.call(i)
-        end
+        run_after_parallel_fork_hook(i)
 
         p_suites = []
         suites.each_with_index{|s, j| p_suites << s if j % n == i}
-        p_suites.each do |s|
-          if s.is_a?(Minitest::Parallel::Test::ClassMethods)
-            s.extend(Minitest::Unparallelize)
-          end
+        parallel_fork_run_test_suites(p_suites, reporter, options)
 
-          s.run(reporter, options)
-        end
-
-        data = %w'count assertions results'.map{|meth| stat_reporter.send(meth)}
-        write.write(Marshal.dump(data))
+        write.write(Marshal.dump(parallel_fork_data_to_marshal))
         write.close
       end
       write.close
@@ -71,18 +100,15 @@ class << Minitest
     end
   end
 
-  def parallel_fork_wait_for_children(data, reporter)
-    data.map{|_pid, read| Thread.new(read, &:read)}.map(&:value).each do |data|
-      begin
-        count, assertions, results = Marshal.load(data)
-      rescue ArgumentError
-        if @on_parallel_fork_marshal_failure
-          @on_parallel_fork_marshal_failure.call
-        end
-        raise
-      end
+  def parallel_fork_child_data(data)
+    data.map{|_pid, read| Thread.new(read, &:read)}.map(&:value).map{|data| parallel_fork_data_from_marshal(data)}
+  end
+
+  def parallel_fork_wait_for_children(child_info, reporter)
+    parallel_fork_child_data(child_info).each do |data|
+      count, assertions, results = data
       reporter.reporters.each do |rep|
-        next unless %w'count assertions results count= assertions='.all?{|meth| rep.respond_to?(meth)}
+        next unless %i'count assertions results count= assertions='.all?{|meth| rep.respond_to?(meth)}
         rep.count += count
         rep.assertions += assertions
         rep.results.concat(results)

@@ -1,3 +1,7 @@
+=== master
+
+* Refactor internals for easier extension (jeremyevans)
+
 === 1.3.1 (2023-09-25)
 
 * Bump required_ruby_version to 2.2, since that is lowest version supported by minitest 5.15.0 (jeremyevans)
