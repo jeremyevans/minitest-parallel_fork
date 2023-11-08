@@ -1,4 +1,4 @@
-=== master
+=== 2.0.0 (2023-11-08)
 
 * Add minitest/parallel_fork/fail_fast with support for stopping execution as soon as there is a failure in any child process (jeremyevans, stackmystack) (#12)
 
