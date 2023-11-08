@@ -120,6 +120,9 @@ class << Minitest
     (ENV['NCPU'] || 4).to_i
   end
 
+  # Avoid method redefined verbose warning
+  alias __run __run
+
   # Override __run to use a child forks to run the speeds, which
   # allows for parallel spec execution on MRI.
   def __run(reporter, options)

@@ -1,5 +1,7 @@
 === 2.0.0 (2023-11-08)
 
+* Avoid method redefined warning in verbose warning mode (jeremyevans)
+
 * Add minitest/parallel_fork/fail_fast with support for stopping execution as soon as there is a failure in any child process (jeremyevans, stackmystack) (#12)
 
 * Refactor internals for easier extension (jeremyevans)
