@@ -68,6 +68,17 @@ it reports results.
     # Gather relevant logs for more debugging
   end
 
+== Fail Fast Support
+
+If you would like to run tests in parallel, but stop running tests at the first
+failure, you can use:
+
+  RUBYOPT=-rminitest/parallel_fork/fail_fast rake spec
+
+Note that minitest-parallel_fork uses suite-based parallelism, so tests will not
+stop until one child has a failing test suite (test class that has a failing test
+method), and other children are signaled and also stop processing.
+
 == ActiveRecord
 
 To use this with Rails/ActiveRecord, you probably want to use hooks similar to:
