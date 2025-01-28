@@ -20,8 +20,8 @@ module Minitest::ParallelForkHalt
     suites.each do |suite|
       parallel_fork_run_test_suite(suite, reporter, options)
 
-      # Fail fast if this child process had a failure,
-      # Or the USR1 signal was received indicating other child processes had a failure.
+      # Halt if this child process requested an exit,
+      # Or other child processes requested an exit.
       break if @parallel_fork_stop
     end
   end
@@ -38,7 +38,7 @@ module Minitest::ParallelForkHalt
           results << parallel_fork_data_from_marshal(thread.value)
 
           if @parallel_fork_stop
-            # If any child failed fast, signal other children to fail fast
+            # If halt is requested, signal other children to halt
             threads.each_key do |pid|
               Process.kill(:USR1, pid)
             end

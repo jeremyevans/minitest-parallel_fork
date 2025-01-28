@@ -95,9 +95,15 @@ class << Minitest
         write.write(Marshal.dump(parallel_fork_data_to_marshal))
         write.close
       end
+      run_after_parallel_fork_setup_hook(pid)
       write.close
       [pid, read]
     end
+  end
+
+  def run_after_parallel_fork_setup_hook(pid)
+    # See interrupt.rb
+    nil
   end
 
   def parallel_fork_child_data(data)
