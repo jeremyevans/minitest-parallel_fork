@@ -81,29 +81,27 @@ class << Minitest
     set_parallel_fork_stat_reporter(reporter)
     run_before_parallel_fork_hook
 
-    n = parallel_fork_number
-    n.times.map do |i|
-      read, write = IO.pipe.each{|io| io.binmode}
-      pid = Process.fork do
-        read.close
-        run_after_parallel_fork_hook(i)
-
-        p_suites = []
-        suites.each_with_index{|s, j| p_suites << s if j % n == i}
-        parallel_fork_run_test_suites(p_suites, reporter, options)
-
-        write.write(Marshal.dump(parallel_fork_data_to_marshal))
-        write.close
-      end
-      run_after_parallel_fork_setup_hook(pid)
-      write.close
-      [pid, read]
+    parallel_fork_number.times.map do |i|
+      parallel_fork_fork_child(i, suites, reporter, options)
     end
   end
 
-  def run_after_parallel_fork_setup_hook(pid)
-    # See interrupt.rb
-    nil
+  def parallel_fork_fork_child(i, suites, reporter, options)
+    read, write = IO.pipe.each{|io| io.binmode}
+    pid = Process.fork do
+      read.close
+      run_after_parallel_fork_hook(i)
+
+      p_suites = []
+      n = parallel_fork_number
+      suites.each_with_index{|s, j| p_suites << s if j % n == i}
+      parallel_fork_run_test_suites(p_suites, reporter, options)
+
+      write.write(Marshal.dump(parallel_fork_data_to_marshal))
+      write.close
+    end
+    write.close
+    [pid, read]
   end
 
   def parallel_fork_child_data(data)

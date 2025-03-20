@@ -89,18 +89,25 @@ describe 'minitest/parallel_fork' do
   it "should force stop all forks with 2x interrupt" do
     command = "#{ENV['RUBY']} -I lib spec/minitest_parallel_fork_interrupt_example.rb"
 
-    output = Open3.popen2e(command) { |stdin, out, wait_thr|
+    stdout = nil
+    stderr = nil
+    Open3.popen3(command) do |stdin, out, err, wait_thr|
       stdin.close
-      sleep 1
+      sleep 0.2
       Process.kill('INT', wait_thr.pid)
-      sleep 1
-      Process.kill('INT', wait_thr.pid)
-      wait_thr.value
-      out.read
-    }
+      sleep 0.2
+      begin
+        Process.kill('INT', wait_thr.pid)
+      rescue Errno::ESRCH
+        # Already exited
+      end
+      wait_thr.value.exitstatus.must_equal 1
+      stdout = out.read
+      stderr = err.read
+    end
 
-    output.must_include 'Interrupted.'
-    output.must_include 'Exiting ...'
-    output.must_include 'Interrupt again to exit now.'
+    stdout.must_include "Run options: --seed"
+    stdout.must_include "# Running:"
+    stderr.must_include "Interrupted.\nExiting ...\nInterrupt again to exit immediately."
   end
 end

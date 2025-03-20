@@ -1,8 +1,10 @@
+require 'minitest'
+
 require_relative 'halt'
 require_relative '../parallel_fork'
 
 module Minitest
-  @parallel_fork_child_pids ||= []
+  @parallel_fork_child_pids = []
 end
 
 module Minitest::ParallelForkInterrupt
@@ -13,10 +15,7 @@ module Minitest::ParallelForkInterrupt
       Signal.trap(:INT) do
         parallel_fork_kill_all :KILL
       end
-      puts "\nInterrupted."
-      puts 'Exiting ...'
-      puts 'Interrupt again to exit now.'
-      at_exit { exit 130 }
+      $stderr.puts "\nInterrupted.\nExiting ...\nInterrupt again to exit immediately."
       parallel_fork_kill_all :USR1
     end
   end
@@ -26,19 +25,21 @@ module Minitest::ParallelForkInterrupt
     Signal.trap(:INT, 'IGNORE')
   end
 
-  def run_after_parallel_fork_setup_hook(pid)
-    super
-    @parallel_fork_child_pids << pid
+  def parallel_fork_fork_child(i, suites, reporter, options)
+    res = super
+    @parallel_fork_child_pids << res[0]
+    res
   end
 
   def parallel_fork_kill_all(signal)
     @parallel_fork_child_pids.each do |pid|
-      Process.kill(signal, pid)
-    rescue Errno::ESRCH
-      # Process already terminated
+      begin
+        Process.kill(signal, pid)
+      rescue Errno::ESRCH
+        # Process already terminated
+      end
     end
   end
-
 end
 
 Minitest.singleton_class.prepend(Minitest::ParallelForkInterrupt)

@@ -79,6 +79,20 @@ Note that minitest-parallel_fork uses suite-based parallelism, so tests will not
 stop until one child has a failing test suite (test class that has a failing test
 method), and other children are signaled and also stop processing.
 
+== Interrupt Support
+
+If you would like to run tests in parallel, but allow for shutting down children
+when SIGINT is sent to the process, you can use:
+
+  RUBYOPT=-rminitest/parallel_fork/interrupt ruby spec_runner.rb
+
+The first SIGINT to a process will ask the child processes to shut down gracefully
+with SIGUSR1.  The second SIGINT to a process will kill the child processes with
+SIGKILL.
+
+Note that if you use rake to run the specs, the second SIGINT may not be sent to
+to the parent process, as rake does it's own SIGINT handling.
+
 == ActiveRecord
 
 To use this with Rails/ActiveRecord, you probably want to use hooks similar to:

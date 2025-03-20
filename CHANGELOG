@@ -1,3 +1,7 @@
+=== master
+
+* Add minitest/parallel_fork/interrupt with support handling interrupts (stackmystack, jeremyevans) (#14)
+
 === 2.0.0 (2023-11-08)
 
 * Avoid method redefined warning in verbose warning mode (jeremyevans)
