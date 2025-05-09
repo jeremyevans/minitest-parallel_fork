@@ -93,7 +93,7 @@ describe 'minitest/parallel_fork' do
     stderr = nil
     Open3.popen3(command) do |stdin, out, err, wait_thr|
       stdin.close
-      sleep 0.2
+      sleep 1
       Process.kill('INT', wait_thr.pid)
       sleep 0.2
       begin
