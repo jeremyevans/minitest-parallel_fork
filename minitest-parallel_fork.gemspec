@@ -1,6 +1,6 @@
 spec = Gem::Specification.new do |s|
   s.name = 'minitest-parallel_fork'
-  s.version = '2.0.0'
+  s.version = '2.1.0'
   s.platform = Gem::Platform::RUBY
   s.extra_rdoc_files = ["README.rdoc", "CHANGELOG", "MIT-LICENSE"]
   s.rdoc_options += ["--quiet", "--line-numbers", "--inline-source", '--title', 'minitest-parallel_fork: fork-based parallelization for minitest', '--main', 'README.rdoc']
