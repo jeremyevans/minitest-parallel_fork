@@ -1,7 +1,10 @@
 require 'minitest'
 
 module Minitest::Unparallelize
-  define_method(:run_one_method, &Minitest::Test.method(:run_one_method))
+ # :nocov:
+ meth = Minitest::VERSION >= '6' ? :run : :run_one_method
+ # :nocov:
+ define_method(meth, &Minitest::Test.method(meth))
 end
 
 module Minitest
@@ -74,7 +77,13 @@ class << Minitest
       suite.extend(Minitest::Unparallelize)
     end
 
-    suite.run(reporter, options)
+    if Minitest::VERSION >= '6'
+      suite.run_suite(reporter, options)
+    # :nocov:
+    else
+      suite.run(reporter, options)
+    end
+    # :nocov:
   end
 
   def parallel_fork_setup_children(suites, reporter, options)
@@ -124,12 +133,16 @@ class << Minitest
     (ENV['NCPU'] || 4).to_i
   end
 
+  # :nocov:
+  run_method = Minitest::VERSION >= '6' ? :run_all_suites : :__run
+  # :nocov:
+
   # Avoid method redefined verbose warning
-  alias __run __run
+  alias_method run_method, run_method
 
   # Override __run to use a child forks to run the speeds, which
   # allows for parallel spec execution on MRI.
-  def __run(reporter, options)
+  define_method(run_method) do |reporter, options|
     parallel_fork_wait_for_children(parallel_fork_setup_children(parallel_fork_suites, reporter, options), reporter)
     nil
   end

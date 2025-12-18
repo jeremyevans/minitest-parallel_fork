@@ -48,6 +48,7 @@ describe 'minitest/parallel_fork' do
     it "should execute in parallel#{msg} with passing test suite" do
       @example_prefix = 'pass_'
       output, = run_mpf(*env_key)
+      output.sub!(/, \d+ assertions/, ', 64 assertions') if Minitest::VERSION >= '6' && env_key == 'MPF_MINITEST_HOOKS'
       output.must_include '40 runs, 64 assertions, 0 failures, 0 errors, 8 skips'
     end
   end
@@ -68,6 +69,7 @@ describe 'minitest/parallel_fork' do
   it "should handle failures in *_all methods when using minitest-hooks" do
     output, time = run_mpf('MPF_MINITEST_HOOKS')
     time.must_be :<, 4
+    output.sub!(/, \d+ assertions/, ', 8 assertions') if Minitest::VERSION >= '6'
     output.must_include '23 runs, 8 assertions, 4 failures, 10 errors, 4 skips'
   end
 

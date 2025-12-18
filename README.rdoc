@@ -119,6 +119,11 @@ specs:
   spec_sqlite:    1.75x - 1.86x   2.26x - 2.65x
   spec_postgres:  1.32x - 1.40x     Untested
 
+= Known Issues
+
+When using with minitest 6 and minitest-hooks, reported assertion counts may be
+inaccurate, though run, failure, and error counts should still be accurate.
+
 = License
 
 MIT

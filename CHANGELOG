@@ -1,3 +1,7 @@
+=== master
+
+* Work with minitest 6+ (jeremyevans)
+
 === 2.1.0 (2025-07-02)
 
 * Add minitest/parallel_fork/interrupt with support handling interrupts (stackmystack, jeremyevans) (#14)
