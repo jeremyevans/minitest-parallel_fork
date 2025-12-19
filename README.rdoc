@@ -124,6 +124,8 @@ specs:
 When using with minitest 6 and minitest-hooks, reported assertion counts may be
 inaccurate, though run, failure, and error counts should still be accurate.
 
+minitest-parallel_fork does not currently support coverage testing.
+
 = License
 
 MIT
