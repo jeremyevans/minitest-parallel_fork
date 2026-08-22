@@ -1,9 +1,9 @@
 require 'minitest'
 
 module Minitest::Unparallelize
- # :nocov:
+ # simplecov:disable
  meth = Minitest::VERSION >= '6' ? :run : :run_one_method
- # :nocov:
+ # simplecov:enable
  define_method(meth, &Minitest::Test.method(meth))
 end
 
@@ -79,11 +79,11 @@ class << Minitest
 
     if Minitest::VERSION >= '6'
       suite.run_suite(reporter, options)
-    # :nocov:
+    # simplecov:disable
     else
       suite.run(reporter, options)
     end
-    # :nocov:
+    # simplecov:enable
   end
 
   def parallel_fork_setup_children(suites, reporter, options)
@@ -133,9 +133,9 @@ class << Minitest
     (ENV['NCPU'] || 4).to_i
   end
 
-  # :nocov:
+  # simplecov:disable
   run_method = Minitest::VERSION >= '6' ? :run_all_suites : :__run
-  # :nocov:
+  # simplecov:enable
 
   # Avoid method redefined verbose warning
   alias_method run_method, run_method
